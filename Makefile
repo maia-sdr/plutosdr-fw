@@ -19,7 +19,7 @@ TOOLCHAIN_PATH = $(shell dirname $(TOOLCHAIN2))
 
 NCORES = $(shell grep -c ^processor /proc/cpuinfo)
 VIVADO_SETTINGS ?= /opt/Xilinx/Vivado/$(VIVADO_VERSION)/settings64.sh
-VSUBDIRS = hdl buildroot linux u-boot-xlnx
+VSUBDIRS = maia-sdr buildroot linux u-boot-xlnx
 
 VERSION=$(shell git describe --abbrev=4 --dirty --always --tags)
 LATEST_TAG=$(shell git describe --abbrev=0 --tags)
@@ -106,15 +106,55 @@ build/zImage: linux/arch/arm/boot/zImage  | build
 
 ### Device Tree ###
 
-linux/arch/arm/boot/dts/%.dtb: linux/arch/arm/boot/dts/%.dts  linux/arch/arm/boot/dts/zynq-pluto-sdr.dtsi
+linux/arch/arm/boot/dts/%.dtb: linux/arch/arm/boot/dts/%.dts  linux/arch/arm/boot/dts/zynq-pluto-sdr.dtsi linux/arch/arm/boot/dts/zynq-pluto-sdr-maiasdr.dtsi
 	DTC_FLAGS=-@ make -C linux -j $(NCORES) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) $(notdir $@)
 
 build/%.dtb: linux/arch/arm/boot/dts/%.dtb | build
 	dtc -q -@ -I dtb -O dts $< | sed 's/axi {/amba {/g' | dtc -q -@ -I dts -O dtb -o $@
 
+### maia-kmod ###
+maia-sdr/maia-kmod/maia-sdr.ko:
+	make -C linux ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) modules_prepare
+	ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) KERNEL_SRC=../../linux make -C maia-sdr/maia-kmod
+
+.PHONY: maia-sdr/maia-kmod/maia-sdr.ko
+
+buildroot/board/pluto/maia-sdr.ko: maia-sdr/maia-kmod/maia-sdr.ko | build
+	cp $< $@
+
+### maia-httpd ###
+maia-sdr/maia-httpd/target/armv7-unknown-linux-gnueabihf/release/maia-httpd:
+	cd maia-sdr/maia-httpd && \
+		CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc \
+		cargo build --release --target=armv7-unknown-linux-gnueabihf
+
+.PHONY: maia-sdr/maia-httpd/target/armv7-unknown-linux-gnueabihf/release/maia-httpd
+
+buildroot/board/pluto/maia-httpd: maia-sdr/maia-httpd/target/armv7-unknown-linux-gnueabihf/release/maia-httpd | build
+	cp $< $@
+
+### maia-wasm ###
+maia-sdr/maia-wasm/pkg:
+	cd maia-sdr/maia-wasm && wasm-pack build --target web
+
+.PHONY: maia-sdr/maia-wasm/pkg
+
+buildroot/board/pluto/maia-wasm:
+	mkdir $@
+
+buildroot/board/pluto/maia-wasm/pkg: maia-sdr/maia-wasm/pkg | build buildroot/board/pluto/maia-wasm
+	cp -r $< buildroot/board/pluto/maia-wasm/
+
+buildroot/board/pluto/maia-wasm/assets: maia-sdr/maia-wasm/assets | build buildroot/board/pluto/maia-wasm
+	cp -r $< buildroot/board/pluto/maia-wasm/
+
+maia-wasm: buildroot/board/pluto/maia-wasm/pkg buildroot/board/pluto/maia-wasm/assets
+
+.PHONY: maia-wasm
+
 ### Buildroot ###
 
-buildroot/output/images/rootfs.cpio.gz:
+buildroot/output/images/rootfs.cpio.gz: buildroot/board/pluto/maia-sdr.ko buildroot/board/pluto/maia-httpd maia-wasm
 	@echo device-fw $(VERSION)> $(CURDIR)/buildroot/board/$(TARGET)/VERSIONS
 	@$(foreach dir,$(VSUBDIRS),echo $(dir) $(shell cd $(dir) && git describe --abbrev=4 --dirty --always --tags) >> $(CURDIR)/buildroot/board/$(TARGET)/VERSIONS;)
 	make -C buildroot ARCH=arm zynq_$(TARGET)_defconfig
@@ -133,8 +173,8 @@ build/$(TARGET).itb: u-boot-xlnx/tools/mkimage build/zImage build/rootfs.cpio.gz
 
 build/system_top.xsa:  | build
 ifeq (1, ${HAVE_VIVADO})
-	bash -c "source $(VIVADO_SETTINGS) && make -C hdl/projects/$(TARGET) && cp hdl/projects/$(TARGET)/$(TARGET).sdk/system_top.xsa $@"
-	unzip -l $@ | grep -q ps7_init || cp hdl/projects/$(TARGET)/$(TARGET).srcs/sources_1/bd/system/ip/system_sys_ps7_0/ps7_init* build/
+	bash -c "source $(VIVADO_SETTINGS) && make -C maia-sdr/maia-hdl/projects/$(TARGET) && cp maia-sdr/maia-hdl/projects/$(TARGET)/$(TARGET).sdk/system_top.xsa $@"
+	unzip -l $@ | grep -q ps7_init || cp maia-sdr/maia-hdl/projects/$(TARGET)/$(TARGET).srcs/sources_1/bd/system/ip/system_sys_ps7_0/ps7_init* build/
 else ifneq ($(XSA_FILE),)
 	cp $(XSA_FILE) $@
 else ifneq ($(XSA_URL),)
@@ -184,7 +224,9 @@ clean:
 	make -C u-boot-xlnx clean
 	make -C linux clean
 	make -C buildroot clean
-	make -C hdl clean
+	make -C maia-sdr/maia-hdl clean
+	cd maia-sdr/maia-httpd; cargo clean
+	cd maia-sdr/maia-wasm; cargo clean
 	rm -f $(notdir $(wildcard build/*))
 	rm -rf build/*
 
