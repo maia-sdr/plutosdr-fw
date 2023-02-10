@@ -9,6 +9,18 @@ Latest binary Release : [![GitHub Release](https://img.shields.io/github/release
 
 Firmware License : [![Many Licenses](https://img.shields.io/badge/license-LGPL2+-blue.svg)](https://github.com/analogdevicesinc/plutosdr-fw/blob/master/LICENSE.md)  [![Many License](https://img.shields.io/badge/license-GPL2+-blue.svg)](https://github.com/analogdevicesinc/plutosdr-fw/blob/master/LICENSE.md)  [![Many License](https://img.shields.io/badge/license-BSD-blue.svg)](https://github.com/analogdevicesinc/plutosdr-fw/blob/master/LICENSE.md)  [![Many License](https://img.shields.io/badge/license-apache-blue.svg)](https://github.com/analogdevicesinc/plutosdr-fw/blob/master/LICENSE.md) and many others.
 
+## Support
+
+Support is handled through Github issues or dicussions. Issues dealing with the ADALM Pluto
+firmware itself (building the firmware, flashing the firmware, etc.) should go
+as
+[issues in the plutosdr-fw repository](https://github.com/maia-sdr/plutosdr-fw/issues).
+Issues having to do with Maia SDR (software or FPGA bugs, features requests, etc.)
+should go as [issues in the maia-sdr repository](https://github.com/maia-sdr/maia-sdr/issues).
+There are also
+[Github discussions in the maia-sdr repository](https://github.com/maia-sdr/maia-sdr/discussions)
+for any topics which are not issues (general questions, comments, etc.).
+
 ## Build instructions
 
 Using the `maiasdr/maia-sdr-devel` Docker image from
