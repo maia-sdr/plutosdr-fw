@@ -7,10 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2023-02-14
+
+### Fixed
+
+- Problems with Pluto rev. C device tree (see [issue #2](https://github.com/maia-sdr/plutosdr-fw/issues/2)).
+
 ## [0.1.0] - 2023-02-11
 
 Initial release of the Maia SDR ADALM Pluto firmware. This corresponds to the
 [default ADI firmware v0.35](https://github.com/analogdevicesinc/plutosdr-fw/releases/tag/v0.35).
 
-[unreleased]: https://github.com/maia-sdr/plutosdr-fw/compare/maia-sdr-0.1.0...HEAD
-[0.1.0]: https://github.com/maia-sdr/plutosdr-fw/releases/tag/maia-sdr-0.1.0
+[unreleased]: https://github.com/maia-sdr/plutosdr-fw/compare/maia-sdr-v0.1.1...HEAD
+[0.1.1]: https://github.com/maia-sdr/plutosdr-fw/compare/maia-sdr-v0.1.0...maia-sdr-v0.1.1
+[0.1.0]: https://github.com/maia-sdr/plutosdr-fw/releases/tag/maia-sdr-v0.1.0
