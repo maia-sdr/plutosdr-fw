@@ -123,10 +123,14 @@ buildroot/board/pluto/maia-sdr.ko: maia-sdr/maia-kmod/maia-sdr.ko | build
 	cp $< $@
 
 ### maia-httpd ###
-maia-sdr/maia-httpd/target/armv7-unknown-linux-gnueabihf/release/maia-httpd:
+#
+# Now that buildroot is set-up to use its built-in toolchain with uclibc, we
+# need to build buildroot first to be able to use its toolchain to link
+# maia-httpd.
+maia-sdr/maia-httpd/target/armv7-unknown-linux-gnueabihf/release/maia-httpd: buildroot/output/host/bin/arm-buildroot-linux-uclibcgnueabihf-gcc
 	cd maia-sdr/maia-httpd && \
-		CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc \
-		cargo build --release --target=armv7-unknown-linux-gnueabihf
+		PATH="../../buildroot/output/host/bin/":$(PATH) cargo build --release --target armv7-unknown-linux-gnueabihf \
+		--config target.armv7-unknown-linux-gnueabihf.linker=\"arm-buildroot-linux-uclibcgnueabihf-gcc\"
 
 .PHONY: maia-sdr/maia-httpd/target/armv7-unknown-linux-gnueabihf/release/maia-httpd
 
@@ -153,11 +157,17 @@ maia-wasm: buildroot/board/pluto/maia-wasm/pkg buildroot/board/pluto/maia-wasm/a
 .PHONY: maia-wasm
 
 ### Buildroot ###
-
-buildroot/output/images/rootfs.cpio.gz: buildroot/board/pluto/maia-sdr.ko buildroot/board/pluto/maia-httpd maia-wasm
+#
+# This is divided into two steps compared to ADI's Makefile, because we need to
+# build buildroot's toolchain first, then build maia-httpd with it, and finally
+# build the rootfs (which contains maia-httpd).
+buildroot/output/host/bin/arm-buildroot-linux-uclibcgnueabihf-gcc:
 	@echo device-fw $(VERSION)> $(CURDIR)/buildroot/board/$(TARGET)/VERSIONS
 	@$(foreach dir,$(VSUBDIRS),echo $(dir) $(shell cd $(dir) && git describe --abbrev=4 --dirty --always --tags) >> $(CURDIR)/buildroot/board/$(TARGET)/VERSIONS;)
 	make -C buildroot ARCH=arm zynq_$(TARGET)_defconfig
+	make -C buildroot ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) toolchain
+
+buildroot/output/images/rootfs.cpio.gz: buildroot/output/host/bin/arm-buildroot-linux-uclibcgnueabihf-gcc buildroot/board/pluto/maia-sdr.ko buildroot/board/pluto/maia-httpd maia-wasm
 	make -C buildroot legal-info
 	scripts/legal_info_html.sh "$(COMPLETE_NAME)" "$(CURDIR)/buildroot/board/$(TARGET)/VERSIONS"
 	cp build/LICENSE.html buildroot/board/$(TARGET)/msd/LICENSE.html
