@@ -23,7 +23,7 @@ for any topics which are not issues (general questions, comments, etc.).
 
 ## Build instructions
 
-Using the `maiasdr/maia-sdr-devel` Docker image from
+Using the `ghcr.io/maia-sdr/maia-sdr-devel` Docker image from
 [maia-sdr-docker](https://github.com/maia-sdr/maia-sdr-docker) is recommended to build
 the firmware. To build the FPGA bitstream, Vivado 2021.2 is required.
 
