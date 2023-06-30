@@ -39,7 +39,7 @@ $(error "      3] export VIVADO_VERSION=v20xx.x")
 endif
 
 TARGET ?= pluto
-SUPPORTED_TARGETS:=pluto sidekiqz2
+SUPPORTED_TARGETS:=pluto sidekiqz2 plutoplus
 
 # Include target specific constants
 include scripts/$(TARGET).mk
@@ -59,7 +59,7 @@ endif
 
 ifeq ($(findstring $(TARGET),$(SUPPORTED_TARGETS)),)
 all:
-	@echo "Invalid `TARGET variable ; valid values are: pluto, sidekiqz2" &&
+	@echo "Invalid `TARGET variable ; valid values are: pluto, sidekiqz2, plutoplus" &&
 	exit 1
 else
 all: clean-build $(TARGETS) zip-all legal-info
@@ -119,7 +119,7 @@ maia-sdr/maia-kmod/maia-sdr.ko:
 
 .PHONY: maia-sdr/maia-kmod/maia-sdr.ko
 
-buildroot/board/pluto/maia-sdr.ko: maia-sdr/maia-kmod/maia-sdr.ko | build
+buildroot/board/$(TARGET)/maia-sdr.ko: maia-sdr/maia-kmod/maia-sdr.ko | build
 	cp $< $@
 
 ### maia-httpd ###
@@ -134,7 +134,7 @@ maia-sdr/maia-httpd/target/armv7-unknown-linux-gnueabihf/release/maia-httpd: bui
 
 .PHONY: maia-sdr/maia-httpd/target/armv7-unknown-linux-gnueabihf/release/maia-httpd
 
-buildroot/board/pluto/maia-httpd: maia-sdr/maia-httpd/target/armv7-unknown-linux-gnueabihf/release/maia-httpd | build
+buildroot/board/$(TARGET)/maia-httpd: maia-sdr/maia-httpd/target/armv7-unknown-linux-gnueabihf/release/maia-httpd | build
 	cp $< $@
 
 ### maia-wasm ###
@@ -143,16 +143,16 @@ maia-sdr/maia-wasm/pkg:
 
 .PHONY: maia-sdr/maia-wasm/pkg
 
-buildroot/board/pluto/maia-wasm:
+buildroot/board/$(TARGET)/maia-wasm:
 	mkdir $@
 
-buildroot/board/pluto/maia-wasm/pkg: maia-sdr/maia-wasm/pkg | build buildroot/board/pluto/maia-wasm
-	cp -r $< buildroot/board/pluto/maia-wasm/
+buildroot/board/$(TARGET)/maia-wasm/pkg: maia-sdr/maia-wasm/pkg | build buildroot/board/$(TARGET)/maia-wasm
+	cp -r $< buildroot/board/$(TARGET)/maia-wasm/
 
-buildroot/board/pluto/maia-wasm/assets: maia-sdr/maia-wasm/assets | build buildroot/board/pluto/maia-wasm
-	cp -r $< buildroot/board/pluto/maia-wasm/
+buildroot/board/$(TARGET)/maia-wasm/assets: maia-sdr/maia-wasm/assets | build buildroot/board/$(TARGET)/maia-wasm
+	cp -r $< buildroot/board/$(TARGET)/maia-wasm/
 
-maia-wasm: buildroot/board/pluto/maia-wasm/pkg buildroot/board/pluto/maia-wasm/assets
+maia-wasm: buildroot/board/$(TARGET)/maia-wasm/pkg buildroot/board/$(TARGET)/maia-wasm/assets
 
 .PHONY: maia-wasm
 
@@ -167,7 +167,7 @@ buildroot/output/host/bin/arm-buildroot-linux-uclibcgnueabihf-gcc:
 	make -C buildroot ARCH=arm zynq_$(TARGET)_defconfig
 	make -C buildroot ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) toolchain
 
-buildroot/output/images/rootfs.cpio.gz: buildroot/output/host/bin/arm-buildroot-linux-uclibcgnueabihf-gcc buildroot/board/pluto/maia-sdr.ko buildroot/board/pluto/maia-httpd maia-wasm
+buildroot/output/images/rootfs.cpio.gz: buildroot/output/host/bin/arm-buildroot-linux-uclibcgnueabihf-gcc buildroot/board/$(TARGET)/maia-sdr.ko buildroot/board/$(TARGET)/maia-httpd maia-wasm
 	make -C buildroot legal-info
 	scripts/legal_info_html.sh "$(COMPLETE_NAME)" "$(CURDIR)/buildroot/board/$(TARGET)/VERSIONS"
 	cp build/LICENSE.html buildroot/board/$(TARGET)/msd/LICENSE.html
