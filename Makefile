@@ -107,9 +107,9 @@ build/%.dtb: linux/arch/arm/boot/dts/%.dtb | build
 	dtc -q -@ -I dtb -O dts $< | sed 's/axi {/amba {/g' | dtc -q -@ -I dts -O dtb -o $@
 
 ### maia-kmod ###
-maia-sdr/maia-kmod/maia-sdr.ko:
-	make -C linux ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) modules_prepare
-	ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) KERNEL_SRC=../../linux make -C maia-sdr/maia-kmod
+maia-sdr/maia-kmod/maia-sdr.ko: TOOLCHAIN
+	$(TOOLS_PATH) make -C linux ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) modules_prepare
+	$(TOOLS_PATH) make -C maia-sdr/maia-kmod ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) KERNEL_SRC=../../linux
 
 .PHONY: maia-sdr/maia-kmod/maia-sdr.ko
 
@@ -121,10 +121,10 @@ buildroot/board/$(TARGET)/maia-sdr.ko: maia-sdr/maia-kmod/maia-sdr.ko | build
 # Now that buildroot is set-up to use its built-in toolchain with uclibc, we
 # need to build buildroot first to be able to use its toolchain to link
 # maia-httpd.
-maia-sdr/maia-httpd/target/armv7-unknown-linux-gnueabihf/release/maia-httpd: buildroot/output/host/bin/arm-buildroot-linux-uclibcgnueabihf-gcc
+maia-sdr/maia-httpd/target/armv7-unknown-linux-gnueabihf/release/maia-httpd: TOOLCHAIN
 	cd maia-sdr/maia-httpd && \
-		PATH="../../buildroot/output/host/bin/":$(PATH) cargo build --release --target armv7-unknown-linux-gnueabihf \
-		--config target.armv7-unknown-linux-gnueabihf.linker=\"arm-buildroot-linux-uclibcgnueabihf-gcc\"
+		$(TOOLS_PATH) cargo build --release --target armv7-unknown-linux-gnueabihf \
+		--config target.armv7-unknown-linux-gnueabihf.linker=\"arm-linux-gnueabihf-gcc\"
 
 .PHONY: maia-sdr/maia-httpd/target/armv7-unknown-linux-gnueabihf/release/maia-httpd
 
@@ -151,17 +151,12 @@ maia-wasm: buildroot/board/$(TARGET)/maia-wasm/pkg buildroot/board/$(TARGET)/mai
 .PHONY: maia-wasm
 
 ### Buildroot ###
-#
-# This is divided into two steps compared to ADI's Makefile, because we need to
-# build buildroot's toolchain first, then build maia-httpd with it, and finally
-# build the rootfs (which contains maia-httpd).
-buildroot/output/host/bin/arm-buildroot-linux-uclibcgnueabihf-gcc:
+
+buildroot/output/images/rootfs.cpio.gz: buildroot/board/$(TARGET)/maia-sdr.ko buildroot/board/$(TARGET)/maia-httpd maia-wasm
 	@echo device-fw $(VERSION)> $(CURDIR)/buildroot/board/$(TARGET)/VERSIONS
 	@$(foreach dir,$(VSUBDIRS),echo $(dir) $(shell cd $(dir) && git describe --abbrev=4 --dirty --always --tags) >> $(CURDIR)/buildroot/board/$(TARGET)/VERSIONS;)
 	make -C buildroot ARCH=arm zynq_$(TARGET)_defconfig
-	make -C buildroot ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) toolchain
 
-buildroot/output/images/rootfs.cpio.gz: buildroot/output/host/bin/arm-buildroot-linux-uclibcgnueabihf-gcc buildroot/board/$(TARGET)/maia-sdr.ko buildroot/board/$(TARGET)/maia-httpd maia-wasm
 ifneq (1, ${SKIP_LEGAL})
 	make -C buildroot legal-info
 	scripts/legal_info_html.sh "$(COMPLETE_NAME)" "$(CURDIR)/buildroot/board/$(TARGET)/VERSIONS"
