@@ -9,6 +9,14 @@ Latest binary Release : [![GitHub Release](https://img.shields.io/github/release
 
 Firmware License : [![Many Licenses](https://img.shields.io/badge/license-LGPL2+-blue.svg)](https://github.com/analogdevicesinc/plutosdr-fw/blob/master/LICENSE.md)  [![Many License](https://img.shields.io/badge/license-GPL2+-blue.svg)](https://github.com/analogdevicesinc/plutosdr-fw/blob/master/LICENSE.md)  [![Many License](https://img.shields.io/badge/license-BSD-blue.svg)](https://github.com/analogdevicesinc/plutosdr-fw/blob/master/LICENSE.md)  [![Many License](https://img.shields.io/badge/license-apache-blue.svg)](https://github.com/analogdevicesinc/plutosdr-fw/blob/master/LICENSE.md) and many others.
 
+## Installation and supported hardware
+
+This repository contains Maia SDR firmware images for the ADI Pluto and the
+Pluto+.
+
+See the [installation instructions](https://maia-sdr.org/installation/) for how
+to install the firmware and for other supported devices.
+
 ## Support
 
 Support is handled through Github issues or dicussions. Issues dealing with the ADALM Pluto
