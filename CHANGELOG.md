@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2024-02-23
+
+### Added
+
+- Update Maia SDR to v0.7.0. Adds IQEngine to view IQ recordings done in the DDR.
+
 ## [0.4.2] - 2024-01-07
 
 ### Fixed
@@ -74,7 +80,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Initial release of the Maia SDR ADALM Pluto firmware. This corresponds to the
 [default ADI firmware v0.35](https://github.com/analogdevicesinc/plutosdr-fw/releases/tag/v0.35).
 
-[unreleased]: https://github.com/maia-sdr/plutosdr-fw/compare/maia-sdr-v0.4.2...HEAD
+[unreleased]: https://github.com/maia-sdr/plutosdr-fw/compare/maia-sdr-v0.5.0...HEAD
+[0.5.0]: https://github.com/maia-sdr/plutosdr-fw/compare/maia-sdr-v0.4.2...maia-sdr-v0.5.0
 [0.4.2]: https://github.com/maia-sdr/plutosdr-fw/compare/maia-sdr-v0.4.1...maia-sdr-v0.4.2
 [0.4.1]: https://github.com/maia-sdr/plutosdr-fw/compare/maia-sdr-v0.4.0...maia-sdr-v0.4.1
 [0.4.0]: https://github.com/maia-sdr/plutosdr-fw/compare/maia-sdr-v0.3.1...maia-sdr-v0.4.0
