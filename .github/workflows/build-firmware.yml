@@ -51,7 +51,7 @@ jobs:
         export TARGET=${{matrix.target}}
         make
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: maia-sdr-${{matrix.target}}-firmware
         path: |
