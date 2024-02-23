@@ -150,9 +150,35 @@ maia-wasm: buildroot/board/$(TARGET)/maia-wasm/pkg buildroot/board/$(TARGET)/mai
 
 .PHONY: maia-wasm
 
+### IQEngine client ###
+IQEngine/client/build:
+	cd IQEngine/client && npm ci && npm run build
+
+.PHONY: IQEngine/client/build
+
+# IQEngine assets are compressed with xz to save ramfs space
+# maia-httpd uncompresses these on the fly for each request.
+buildroot/board/$(TARGET)/iqengine: IQEngine/client/build
+	rm -rf $@
+	mkdir $@
+	cp $</index.html $@/
+	lz4 -m --best --rm $</assets/*
+	cp $</assets/* $@/
+
+buildroot/board/$(TARGET)/iqengine-public: IQEngine/client/build
+	rm -rf $@
+	mkdir $@
+	cp IQEngine/client/public/discord.svg $@/
+	cp IQEngine/client/public/github.svg $@/
+	cp IQEngine/client/public/LinkedIn_icon.svg $@/
+
+iqengine: buildroot/board/$(TARGET)/iqengine buildroot/board/$(TARGET)/iqengine-public
+
+.PHONY: iqengine
+
 ### Buildroot ###
 
-buildroot/output/images/rootfs.cpio.gz: buildroot/board/$(TARGET)/maia-sdr.ko buildroot/board/$(TARGET)/maia-httpd maia-wasm
+buildroot/output/images/rootfs.cpio.gz: buildroot/board/$(TARGET)/maia-sdr.ko buildroot/board/$(TARGET)/maia-httpd maia-wasm iqengine
 	@echo device-fw $(VERSION)> $(CURDIR)/buildroot/board/$(TARGET)/VERSIONS
 	@$(foreach dir,$(VSUBDIRS),echo $(dir) $(shell cd $(dir) && git describe --abbrev=4 --dirty --always --tags) >> $(CURDIR)/buildroot/board/$(TARGET)/VERSIONS;)
 	make -C buildroot ARCH=arm zynq_$(TARGET)_defconfig
@@ -229,6 +255,8 @@ clean:
 	make -C maia-sdr/maia-hdl clean
 	cd maia-sdr/maia-httpd; cargo clean
 	cd maia-sdr/maia-wasm; cargo clean
+	rm -rf IQEngine/client/build
+	rm -rf IQEngine/client/node_modules
 	rm -f $(notdir $(wildcard build/*))
 	rm -rf build/*
 
