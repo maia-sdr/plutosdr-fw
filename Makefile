@@ -5,6 +5,7 @@ VIVADO_VERSION ?= 2022.2
 CROSS_COMPILE = arm-linux-gnueabihf-
 TOOLS_PATH = PATH="$(CURDIR)/buildroot/output/host/bin:$(CURDIR)/buildroot/output/host/sbin:$(PATH)"
 TOOLCHAIN = $(CURDIR)/buildroot/output/host/bin/$(CROSS_COMPILE)gcc
+TOOLCHAIN_FORTRAN = $(CURDIR)/buildroot/output/host/bin/$(CROSS_COMPILE)gfortran
 
 NCORES = $(shell grep -c ^processor /proc/cpuinfo)
 VIVADO_SETTINGS ?= /opt/Xilinx/Vivado/$(VIVADO_VERSION)/settings64.sh
@@ -123,8 +124,10 @@ buildroot/board/$(TARGET)/maia-sdr.ko: maia-sdr/maia-kmod/maia-sdr.ko | build
 # maia-httpd.
 maia-sdr/maia-httpd/target/armv7-unknown-linux-gnueabihf/release/maia-httpd: TOOLCHAIN
 	cd maia-sdr/maia-httpd && \
-		$(TOOLS_PATH) cargo build --release --target armv7-unknown-linux-gnueabihf \
-		--config target.armv7-unknown-linux-gnueabihf.linker=\"arm-linux-gnueabihf-gcc\"
+	  OPENBLAS_TARGET=armv7 OPENBLAS_HOSTCC=gcc \
+	  OPENBLAS_CC=$(TOOLCHAIN) OPENBLAS_FC=$(TOOLCHAIN_FORTRAN) \
+          cargo build --release --target armv7-unknown-linux-gnueabihf \
+		--config target.armv7-unknown-linux-gnueabihf.linker=\"$(TOOLCHAIN)\"
 
 .PHONY: maia-sdr/maia-httpd/target/armv7-unknown-linux-gnueabihf/release/maia-httpd
 
