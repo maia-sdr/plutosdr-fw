@@ -14,14 +14,14 @@ jobs:
     name: Build firmware
     runs-on: [self-hosted, vivado]
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         submodules: recursive
     - name: Build firmware
       run: |
         DOCKER_USER="$(id -u):$(id -g)" TARGET=${{matrix.target}} docker compose run --rm build
     - name: Upload artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: maia-sdr-${{matrix.target}}-firmware
         path: |

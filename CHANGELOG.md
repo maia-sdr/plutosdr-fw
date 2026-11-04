@@ -13,6 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.3] - 2026-11-04
+
+### Changed
+
+- Update Maia SDR to v0.12.1. Updates dependencies.
+- Update IQEngine to latest main.
+
 ## [0.8.2] - 2025-11-09
 
 ### Changed
@@ -129,7 +136,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Initial release of the Maia SDR ADALM Pluto firmware. This corresponds to the
 [default ADI firmware v0.35](https://github.com/analogdevicesinc/plutosdr-fw/releases/tag/v0.35).
 
-[unreleased]: https://github.com/maia-sdr/plutosdr-fw/compare/maia-sdr-v0.8.2...HEAD
+[unreleased]: https://github.com/maia-sdr/plutosdr-fw/compare/maia-sdr-v0.8.3...HEAD
+[0.8.2]: https://github.com/maia-sdr/plutosdr-fw/compare/maia-sdr-v0.8.2...maia-sdr-v0.8.3
 [0.8.2]: https://github.com/maia-sdr/plutosdr-fw/compare/maia-sdr-v0.8.1...maia-sdr-v0.8.2
 [0.8.1]: https://github.com/maia-sdr/plutosdr-fw/compare/maia-sdr-v0.8.0...maia-sdr-v0.8.1
 [0.8.0]: https://github.com/maia-sdr/plutosdr-fw/compare/maia-sdr-v0.7.0...maia-sdr-v0.8.0
